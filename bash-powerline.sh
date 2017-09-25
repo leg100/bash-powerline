@@ -12,10 +12,12 @@ __powerline() {
     readonly GIT_BRANCH_CHANGED_SYMBOL='+'
     readonly GIT_NEED_PUSH_SYMBOL='⇡'
     readonly GIT_NEED_PULL_SYMBOL='⇣'
+    readonly KUBECTX_SYMBOL='海'
 
     # Colorscheme
     readonly RESET='\[\033[m\]'
     readonly COLOR_CWD='\[\033[0;34m\]' # blue
+    readonly COLOR_KUBECTX='\[\033[0;35m\]' # magenta
     readonly COLOR_GIT='\[\033[0;36m\]' # cyan
     readonly COLOR_SYMBOL_SUCCESS='\[\033[0;32m\]' # green
     readonly COLOR_SYMBOL_FAILURE='\[\033[0;31m\]' # red
@@ -61,6 +63,13 @@ __powerline() {
         printf " $GIT_BRANCH_SYMBOL$branch$marks"
     }
 
+    __kubectl_context() {
+      current_context=$(kubectl config current-context)
+      if [ $? -eq 0 ]; then
+        printf " $KUBECTX_SYMBOL$current_context"
+      fi
+    }
+
     ps1() {
         # Check the exit code of the previous command and display different
         # colors in the prompt accordingly. 
@@ -69,6 +78,8 @@ __powerline() {
         else
             local symbol="$COLOR_SYMBOL_FAILURE $PS_SYMBOL $RESET"
         fi
+
+        local kubectx="$COLOR_KUBECTX$(__kubectl_context)$RESET"
 
         local cwd="$COLOR_CWD\w$RESET"
         # Bash by default expands the content of PS1 unless promptvars is disabled.
@@ -84,7 +95,7 @@ __powerline() {
             local git="$COLOR_GIT$(__git_info)$RESET"
         fi
 
-        PS1="$cwd$git$symbol"
+        PS1="$cwd$kubectx$git$symbol"
     }
 
     PROMPT_COMMAND=ps1
